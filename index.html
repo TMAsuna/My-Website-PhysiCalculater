@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhysiCalc • Quantum Sci-Fi & Educational Solver</title>
+  
+  <!-- FontAwesome 6.5.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  
+  <!-- Particles.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'Courier New', 'monospace']
+          },
+          animation: {
+            'spin-slow': 'spin 12s linear infinite',
+            'pulse-glow': 'pulseGlow 2.5s infinite',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 15px rgba(6, 182, 212, 0.2)' },
+              '50%': { boxShadow: '0 0 35px rgba(6, 182, 212, 0.8), inset 0 0 25px rgba(6, 182, 212, 0.4)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ซ่อน Spin buttons ในช่อง input number */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* สไตล์ Modal Animation 3D Scale-in */
+    .modal-enter {
+      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .modal-exit {
+      animation: modalScaleOut 0.2s ease-in forwards;
+    }
+
+    @keyframes modalScaleIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.88) translateY(20px) rotateX(8deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0) rotateX(0deg);
+      }
+    }
+
+    @keyframes modalScaleOut {
+      0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+      }
+    }
+
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.05);
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(6, 182, 212, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(6, 182, 212, 0.8);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-[#060913] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white dark:selection:text-black overflow-x-hidden relative transition-colors duration-500">
+
+  <!-- ==================== PARTICLES BACKGROUND LAYER ==================== -->
+  <div id="particles-js" class="fixed inset-0 z-0 pointer-events-none opacity-75 dark:opacity-60 transition-opacity duration-500"></div>
+  
+  <!-- แสง Ambient Glow เรืองแสงบรรยากาศหลังฉาก -->
+  <div class="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[750px] h-[350px] sm:h-[450px] bg-gradient-to-tr from-cyan-400/25 via-sky-300/20 to-indigo-400/20 dark:from-cyan-600/15 dark:via-indigo-600/10 dark:to-fuchsia-600/10 rounded-full blur-[120px] sm:blur-[150px] pointer-events-none z-0 transition-all duration-500"></div>
+
+  <!-- ==================== HEADER (LOGO & NAV) ==================== -->
+  <header class="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between border-b border-cyan-600/15 dark:border-cyan-500/10 backdrop-blur-md bg-white/60 dark:bg-slate-950/40 transition-colors duration-500">
+    <!-- โลโก้ Quantum Lab -->
+    <div class="flex items-center gap-3 sm:gap-4">
+      <div class="relative w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.4)] flex-shrink-0">
+        <div class="w-full h-full bg-white dark:bg-slate-950 rounded-[14px] flex items-center justify-center transition-colors duration-500">
+          <i class="fa-solid fa-atom text-cyan-600 dark:text-cyan-400 text-xl sm:text-2xl animate-spin-slow drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]"></i>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-black text-xl sm:text-2xl md:text-3xl lg:text-4xl tracking-wider uppercase bg-gradient-to-r from-cyan-700 via-sky-600 to-indigo-700 dark:from-cyan-400 dark:via-sky-300 dark:to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(34,211,238,0.35)]">
+            PhysiCalc
+          </h1>
+          <span class="text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-cyan-100/90 text-cyan-800 border border-cyan-400/40 dark:bg-cyan-950/80 dark:text-cyan-300 dark:border-cyan-500/40 shadow-sm">
+            v8.0
+          </span>
+        </div>
+        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono tracking-tight">INTERACTIVE PHYSICS LABORATORY</p>
+      </div>
+    </div>
+
+    <!-- ปุ่มควบคุม Header -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Quick Theme Toggle Button -->
+      <button id="quickThemeBtn" onclick="toggleThemeQuick()" aria-label="สลับโหมดสว่าง/มืด" class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border border-cyan-600/20 dark:border-cyan-500/30 bg-white/80 dark:bg-slate-900/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 transition-all duration-300 flex items-center justify-center text-sm sm:text-base shadow-sm active:scale-95">
+        <i id="quickThemeIcon" class="fa-solid fa-sun text-amber-500 dark:text-cyan-300"></i>
+      </button>
+
+      <!-- ปุ่มเปิด Sidebar -->
+      <button id="openSidebarBtn" aria-label="เปิดเมนูและการตั้งค่า" class="group px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-cyan-600/25 dark:border-cyan-500/30 bg-white/80 dark:bg-slate-900/60 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 text-cyan-800 dark:text-cyan-300 transition-all duration-300 flex items-center gap-2 text-xs sm:text-sm font-mono font-bold shadow-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:border-cyan-400 active:scale-95">
+        <i class="fa-solid fa-book-open text-cyan-600 dark:text-cyan-400 text-sm sm:text-base group-hover:scale-110 transition-transform duration-300"></i>
+        <span class="hidden sm:inline">คู่มือ & เมนู</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT (RESPONSIVE WRAPPER) ==================== -->
+  <main class="relative z-10 w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1 flex flex-col items-center justify-center">
+    
+    <!-- Formula Tabs: Mobile-First (2x2 Grid บนมือถือ, Inline-Flex บนแท็บเล็ต/พีซี) -->
+    <div class="w-full sm:w-auto grid grid-cols-2 sm:flex sm:flex-wrap justify-center p-1.5 sm:p-2 bg-white/70 dark:bg-slate-950/70 border border-cyan-600/20 dark:border-cyan-500/20 backdrop-blur-xl rounded-2xl sm:rounded-full mb-6 sm:mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_0_25px_rgba(0,0,0,0.5)] transition-colors duration-500 gap-1.5 sm:gap-2">
+      <button onclick="switchTab('f1')" id="tab-f1" class="tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-600 text-white dark:text-black shadow-[0_0_18px_rgba(6,182,212,0.45)] flex items-center justify-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-bolt-lightning text-xs"></i>
+        <span>v = u + at</span>
+      </button>
+      <button onclick="switchTab('f2')" id="tab-f2" class="tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200/50 dark:hover:bg-slate-900/60 flex items-center justify-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-chart-line text-xs"></i>
+        <span>s = ut + ½at²</span>
+      </button>
+      <button onclick="switchTab('f3')" id="tab-f3" class="tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200/50 dark:hover:bg-slate-900/60 flex items-center justify-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-compass text-xs"></i>
+        <span>v² = u² + 2as</span>
+      </button>
+      <button onclick="switchTab('f4')" id="tab-f4" class="tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200/50 dark:hover:bg-slate-900/60 flex items-center justify-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-atom text-xs"></i>
+        <span>F = ma</span>
+      </button>
+    </div>
+
+    <!-- Main Holographic Card Box -->
+    <div class="w-full bg-white/75 dark:bg-slate-900/40 backdrop-blur-2xl border border-cyan-600/20 dark:border-cyan-500/30 rounded-2xl sm:rounded-3xl lg:rounded-[2rem] p-4 sm:p-8 lg:p-10 shadow-[0_15px_45px_rgba(2,132,199,0.08)] dark:shadow-[0_0_50px_rgba(6,182,212,0.12)] relative overflow-hidden transition-all duration-500">
+      
+      <!-- เส้น Grid และ Glow ตกแต่ง -->
+      <div class="absolute -top-24 -right-24 w-56 h-56 bg-cyan-400/15 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+
+      <!-- หัวข้อสูตรย่อย -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-cyan-600/15 dark:border-cyan-500/10 pb-4 sm:pb-5 mb-5 sm:mb-7 gap-2 sm:gap-4">
+        <div>
+          <span class="text-[10px] sm:text-xs uppercase font-mono tracking-widest text-cyan-600 dark:text-cyan-400 font-bold flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+            ACTIVE EQUATION MODULE
+          </span>
+          <h2 id="currentFormulaDisplay" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-wide text-slate-900 dark:text-white font-mono mt-1 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(255,255,255,0.35)]">
+            v = u + at
+          </h2>
+        </div>
+        <span id="formulaDesc" class="self-start sm:self-center text-[10px] sm:text-xs font-mono font-semibold px-3 sm:px-4 py-1 sm:py-1.5 bg-cyan-50 dark:bg-cyan-950/50 text-cyan-800 dark:text-cyan-300 border border-cyan-300/70 dark:border-cyan-500/30 rounded-xl shadow-sm">
+          LINEAR KINEMATICS
+        </span>
+      </div>
+
+      <!-- Dropdown เลือกตัวแปรที่ต้องการคำนวณ -->
+      <div class="mb-5 sm:mb-7">
+        <label for="targetVariable" class="block text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-crosshairs text-cyan-600 dark:text-cyan-400 text-sm sm:text-base"></i>
+          TARGET PARAMETER (ตัวแปรที่ต้องการหาค่า)
+        </label>
+        <div class="relative">
+          <select id="targetVariable" onchange="renderDynamicInputs()" class="w-full pl-4 sm:pl-5 pr-10 sm:pr-12 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-white/90 dark:bg-slate-950/70 text-slate-900 dark:text-cyan-300 font-mono text-sm sm:text-base md:text-lg font-bold focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(34,211,238,0.35)] transition-all duration-300 cursor-pointer appearance-none">
+            <!-- Dropdown items rendered via JS -->
+          </select>
+          <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-600 dark:text-cyan-400 text-sm sm:text-base">
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- กล่องแสดงช่องรับค่าตัวแปรที่เหลือ (Dynamic Inputs - แก้ไขปัญหา Icon Overlap) -->
+      <div id="inputsContainer" class="space-y-4 sm:space-y-5 mb-6 sm:mb-8">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button onclick="calculateSolution()" class="relative flex-1 group overflow-hidden rounded-xl sm:rounded-2xl p-[2px] font-semibold text-white transition-all duration-300 active:scale-[0.98] shadow-[0_0_20px_rgba(6,182,212,0.35)] hover:shadow-[0_0_35px_rgba(6,182,212,0.7)]">
+          <span class="absolute inset-0 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-xl sm:rounded-2xl animate-pulse"></span>
+          <span class="relative block w-full py-3.5 sm:py-4 px-4 sm:px-6 bg-white dark:bg-slate-950 rounded-[10px] sm:rounded-[14px] text-center font-mono tracking-wider font-extrabold text-sm sm:text-base md:text-lg text-cyan-700 dark:text-cyan-300 group-hover:text-white group-hover:bg-transparent transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3">
+            <i class="fa-solid fa-atom text-cyan-600 dark:text-cyan-400 group-hover:rotate-180 transition-transform duration-700 text-base sm:text-lg"></i>
+            <span>EXECUTE QUANTUM SOLVER</span>
+          </span>
+        </button>
+        <button onclick="resetInputs()" class="py-3 sm:py-4 px-6 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 bg-white/70 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-mono text-xs sm:text-sm font-bold rounded-xl sm:rounded-2xl transition-all duration-200 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>RESET</span>
+        </button>
+      </div>
+
+      <!-- กล่องแสดงข้อผิดพลาด (Error Box) -->
+      <div id="errorBox" class="mt-4 sm:mt-6 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-500/50 text-rose-700 dark:text-rose-300 text-xs sm:text-sm font-mono hidden flex items-center gap-3 shadow-sm">
+        <i class="fa-solid fa-triangle-exclamation text-base sm:text-lg flex-shrink-0 text-rose-500"></i>
+        <span id="errorMessage" class="font-medium">เกิดข้อผิดพลาดในการคำนวณ</span>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ==================== 3D DIMENSIONAL POPUP MODAL (SOLUTION) ==================== -->
+  <div id="solutionModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 dark:bg-black/80 backdrop-blur-xl hidden opacity-0 transition-opacity duration-300">
+    
+    <!-- Modal Card Box -->
+    <div id="solutionModalCard" class="relative w-full max-w-full sm:max-w-2xl lg:max-w-3xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border border-cyan-500/40 dark:border-cyan-400/50 rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10 shadow-[0_25px_60px_rgba(8,112,184,0.35)] dark:shadow-[0_20px_50px_rgba(8,112,184,0.7)] text-slate-800 dark:text-slate-100 overflow-hidden transform transition-all duration-300 max-h-[92vh] overflow-y-auto custom-scrollbar">
+      
+      <!-- ลายมุม Sci-Fi Corners -->
+      <div class="absolute top-0 left-0 w-8 h-8 sm:w-10 sm:h-10 border-t-2 border-l-2 border-cyan-500 pointer-events-none"></div>
+      <div class="absolute top-0 right-0 w-8 h-8 sm:w-10 sm:h-10 border-t-2 border-r-2 border-cyan-500 pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-8 h-8 sm:w-10 sm:h-10 border-b-2 border-l-2 border-cyan-500 pointer-events-none"></div>
+      <div class="absolute bottom-0 right-0 w-8 h-8 sm:w-10 sm:h-10 border-b-2 border-r-2 border-cyan-500 pointer-events-none"></div>
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 sm:pb-5 border-b border-cyan-500/20 mb-4 sm:mb-6">
+        <div class="flex items-center gap-2.5 sm:gap-3.5">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-600 dark:text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+            <i class="fa-solid fa-terminal text-sm sm:text-base"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold font-mono tracking-wider text-base sm:text-lg md:text-xl text-cyan-700 dark:text-cyan-300">
+              STEP-BY-STEP DERIVATION
+            </h3>
+            <p class="text-[10px] sm:text-xs font-mono text-slate-500 dark:text-slate-400">การแจกแจงสมการพีชคณิตทางฟิสิกส์</p>
+          </div>
+        </div>
+        <button onclick="closeSolutionModal()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-rose-100 dark:hover:bg-rose-950/60 border border-slate-300 dark:border-slate-700 hover:border-rose-400 text-slate-500 dark:text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center text-base">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- ขั้นตอน 1-4 -->
+      <div class="space-y-3 sm:space-y-4 font-mono">
+        
+        <!-- บรรทัดที่ 1: แสดงสูตรย้ายข้าง -->
+        <div class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 shadow-inner">
+          <span class="text-[10px] sm:text-xs uppercase tracking-widest text-cyan-700 dark:text-cyan-400 font-bold block mb-1">
+            [01] FORMULA TRANSFORMATION (สูตรย้ายข้าง)
+          </span>
+          <div id="step1Formula" class="text-sm sm:text-base md:text-lg font-bold text-slate-900 dark:text-white tracking-wide">
+            <!-- Render Step 1 -->
+          </div>
+        </div>
+
+        <!-- บรรทัดที่ 2: แทนค่าตัวแปร -->
+        <div class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 shadow-inner">
+          <span class="text-[10px] sm:text-xs uppercase tracking-widest text-sky-700 dark:text-sky-400 font-bold block mb-1">
+            [02] VALUE SUBSTITUTION (แทนค่าตัวแปร)
+          </span>
+          <div id="step2Substitute" class="text-sm sm:text-base md:text-lg text-slate-800 dark:text-slate-200 overflow-x-auto leading-relaxed">
+            <!-- Render Step 2 -->
+          </div>
+        </div>
+
+        <!-- บรรทัดที่ 3: ขั้นตอนคำนวณย่อย -->
+        <div class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 shadow-inner">
+          <span class="text-[10px] sm:text-xs uppercase tracking-widest text-violet-700 dark:text-violet-400 font-bold block mb-1">
+            [03] INTERMEDIATE EVALUATION (การคำนวณย่อย)
+          </span>
+          <div id="step3Intermediate" class="text-sm sm:text-base md:text-lg text-violet-800 dark:text-violet-200 overflow-x-auto leading-relaxed">
+            <!-- Render Step 3 -->
+          </div>
+        </div>
+
+        <!-- บรรทัดที่ 4: สรุปผลลัพธ์ Hologram (คำตอบสุดท้ายขนาดใหญ่) -->
+        <div class="relative p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-cyan-50 via-sky-50 to-emerald-50 dark:from-cyan-950/40 dark:via-indigo-950/40 dark:to-slate-950/80 border-2 border-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.25)]">
+          <span class="text-[10px] sm:text-xs uppercase tracking-widest text-cyan-800 dark:text-cyan-300 font-bold block mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm sm:text-base"></i>
+            [04] FINAL SOLUTION CONVERGENCE (คำตอบสุดท้าย)
+          </span>
+          <div id="step4Conclusion" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-cyan-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-cyan-300 dark:via-white dark:to-emerald-300 font-mono tracking-tight drop-shadow-sm dark:drop-shadow-[0_0_18px_rgba(34,211,238,0.7)] mt-1">
+            <!-- Render Step 4 -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ปุ่มปิด Modal ด้านล่าง -->
+      <div class="mt-5 sm:mt-7 flex justify-end">
+        <button onclick="closeSolutionModal()" class="py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl bg-cyan-600 text-white dark:bg-cyan-500/20 hover:bg-cyan-700 dark:hover:bg-cyan-500/30 border border-cyan-500 dark:border-cyan-400/50 dark:text-cyan-300 font-mono text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 shadow-sm active:scale-95">
+          CLOSE TERMINAL [ESC]
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="relative z-10 py-4 sm:py-6 text-center text-xs font-mono text-slate-500 border-t border-cyan-600/10 dark:border-slate-900 bg-white/50 dark:bg-slate-950/60 backdrop-blur-md transition-colors duration-500">
+    <span>QUANTUM PHYSICS ENGINE</span>
+    <span class="mx-2">•</span>
+    <span>EDUCATIONAL TOOL 2026</span>
+  </footer>
+
+  <!-- ==================== SIDEBAR (EDUCATIONAL GUIDE & CONTROLS) ==================== -->
+  <div id="sidebarBackdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
+  
+  <aside id="sidebar" class="fixed top-0 right-0 h-full w-[340px] sm:w-[400px] md:w-[440px] max-w-[92vw] bg-white/95 dark:bg-slate-950/90 backdrop-blur-2xl border-l border-cyan-600/20 dark:border-cyan-500/30 z-50 transform translate-x-full transition-transform duration-300 ease-in-out p-4 sm:p-7 flex flex-col justify-between shadow-2xl">
+    
+    <!-- ส่วนหัว Sidebar -->
+    <div class="flex items-center justify-between pb-4 border-b border-cyan-600/15 dark:border-cyan-500/20 flex-shrink-0">
+      <div>
+        <h3 class="font-extrabold font-mono text-base sm:text-lg text-cyan-800 dark:text-cyan-300 flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-cyan-600 dark:text-cyan-400"></i>
+          PHYSICS HUB & GUIDE
+        </h3>
+        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">คู่มือฟิสิกส์และการตั้งค่าระบบ</p>
+      </div>
+      <button id="closeSidebarBtn" aria-label="ปิดการตั้งค่า" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- ส่วนเนื้อหา Scrollable Container -->
+    <div class="my-4 flex-1 overflow-y-auto pr-1.5 custom-scrollbar space-y-5 sm:space-y-6">
+      
+      <!-- ==================== หมวดหมู่: คู่มือการใช้สูตร (FORMULA GUIDE) ==================== -->
+      <div>
+        <div class="flex items-center justify-between mb-2.5">
+          <label class="block text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400 flex items-center gap-2">
+            <i class="fa-solid fa-book-open"></i>
+            คู่มือการใช้สูตร (Guide)
+          </label>
+          <span class="text-[10px] sm:text-xs font-mono px-2 py-0.5 rounded-full bg-cyan-100/80 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-400/30">
+            Interactive
+          </span>
+        </div>
+
+        <!-- Accordion Container -->
+        <div class="space-y-2 font-mono">
+          
+          <!-- สูตร 1: v = u + at -->
+          <div class="rounded-xl border border-cyan-600/20 dark:border-cyan-500/20 bg-slate-50/70 dark:bg-black/25 overflow-hidden transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <button onclick="toggleGuide('guide-f1')" class="w-full px-3.5 py-2.5 sm:py-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-800 dark:text-cyan-300 group">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-bolt-lightning text-cyan-600 dark:text-cyan-400 text-xs"></i>
+                <span>v = u + at</span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-400 border border-cyan-400/30">ไม่ใช้ s</span>
+                <i id="arrow-guide-f1" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 text-slate-400"></i>
+              </span>
+            </button>
+            <div id="content-guide-f1" class="hidden px-3.5 pb-3 pt-1 text-xs sm:text-sm font-sans text-slate-600 dark:text-slate-300 border-t border-cyan-600/10 dark:border-cyan-500/10 bg-white/40 dark:bg-black/10">
+              <p class="leading-relaxed">
+                💡 <strong class="text-cyan-700 dark:text-cyan-300 font-semibold font-mono">วิธีเลือกใช้:</strong> ใช้เมื่อโจทย์ <strong>ไม่ให้ระยะทาง/การกระจัด (s)</strong> มา และไม่ได้ต้องการคำนวณหาค่า s
+              </p>
+            </div>
+          </div>
+
+          <!-- สูตร 2: s = ut + 0.5at² -->
+          <div class="rounded-xl border border-cyan-600/20 dark:border-cyan-500/20 bg-slate-50/70 dark:bg-black/25 overflow-hidden transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <button onclick="toggleGuide('guide-f2')" class="w-full px-3.5 py-2.5 sm:py-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-800 dark:text-cyan-300 group">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-cyan-600 dark:text-cyan-400 text-xs"></i>
+                <span>s = ut + ½at²</span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-400 border border-cyan-400/30">ไม่ใช้ v</span>
+                <i id="arrow-guide-f2" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 text-slate-400"></i>
+              </span>
+            </button>
+            <div id="content-guide-f2" class="hidden px-3.5 pb-3 pt-1 text-xs sm:text-sm font-sans text-slate-600 dark:text-slate-300 border-t border-cyan-600/10 dark:border-cyan-500/10 bg-white/40 dark:bg-black/10">
+              <p class="leading-relaxed">
+                💡 <strong class="text-cyan-700 dark:text-cyan-300 font-semibold font-mono">วิธีเลือกใช้:</strong> ใช้เมื่อโจทย์ <strong>ไม่ให้ความเร็วปลาย (v)</strong> มา และไม่ได้ต้องการคำนวณหาค่า v
+              </p>
+            </div>
+          </div>
+
+          <!-- สูตร 3: v² = u² + 2as -->
+          <div class="rounded-xl border border-cyan-600/20 dark:border-cyan-500/20 bg-slate-50/70 dark:bg-black/25 overflow-hidden transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <button onclick="toggleGuide('guide-f3')" class="w-full px-3.5 py-2.5 sm:py-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-800 dark:text-cyan-300 group">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-compass text-cyan-600 dark:text-cyan-400 text-xs"></i>
+                <span>v² = u² + 2as</span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950/80 text-cyan-800 dark:text-cyan-400 border border-cyan-400/30">ไม่ใช้ t</span>
+                <i id="arrow-guide-f3" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 text-slate-400"></i>
+              </span>
+            </button>
+            <div id="content-guide-f3" class="hidden px-3.5 pb-3 pt-1 text-xs sm:text-sm font-sans text-slate-600 dark:text-slate-300 border-t border-cyan-600/10 dark:border-cyan-500/10 bg-white/40 dark:bg-black/10">
+              <p class="leading-relaxed">
+                💡 <strong class="text-cyan-700 dark:text-cyan-300 font-semibold font-mono">วิธีเลือกใช้:</strong> ใช้เมื่อโจทย์ <strong>ไม่ให้เวลา (t)</strong> มา และไม่ได้ต้องการคำนวณหาค่า t (ไม่ขึ้นกับเวลา)
+              </p>
+            </div>
+          </div>
+
+          <!-- สูตร 4: F = ma -->
+          <div class="rounded-xl border border-cyan-600/20 dark:border-cyan-500/20 bg-slate-50/70 dark:bg-black/25 overflow-hidden transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <button onclick="toggleGuide('guide-f4')" class="w-full px-3.5 py-2.5 sm:py-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-800 dark:text-cyan-300 group">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-atom text-cyan-600 dark:text-cyan-400 text-xs"></i>
+                <span>F = ma</span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-400 border border-indigo-400/30">นิวตัน</span>
+                <i id="arrow-guide-f4" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 text-slate-400"></i>
+              </span>
+            </button>
+            <div id="content-guide-f4" class="hidden px-3.5 pb-3 pt-1 text-xs sm:text-sm font-sans text-slate-600 dark:text-slate-300 border-t border-cyan-600/10 dark:border-cyan-500/10 bg-white/40 dark:bg-black/10">
+              <p class="leading-relaxed">
+                💡 <strong class="text-cyan-700 dark:text-cyan-300 font-semibold">กฎการเคลื่อนที่ข้อที่ 2 ของนิวตัน:</strong> ใช้หาความสัมพันธ์ระหว่างแรงลัพธ์ (F), มวลของวัตถุ (m), และความเร่งที่เกิดขึ้น (a)
+              </p>
+            </div>
+          </div>
+
+          <!-- Accordion 5: สารบัญตัวแปรและหน่วย (Variables & Units) -->
+          <div class="rounded-xl border border-cyan-600/20 dark:border-cyan-500/20 bg-slate-50/70 dark:bg-black/25 overflow-hidden transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <button onclick="toggleGuide('guide-vars')" class="w-full px-3.5 py-2.5 sm:py-3 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-800 dark:text-cyan-300 group">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-tags text-cyan-600 dark:text-cyan-400 text-xs"></i>
+                <span>สรุปตัวแปรและหน่วย (Units)</span>
+              </span>
+              <i id="arrow-guide-vars" class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 text-slate-400"></i>
+            </button>
+            <div id="content-guide-vars" class="hidden px-3.5 pb-3 pt-2 text-[11px] sm:text-xs font-mono border-t border-cyan-600/10 dark:border-cyan-500/10 bg-white/40 dark:bg-black/10">
+              <div class="grid grid-cols-2 gap-2 text-slate-700 dark:text-slate-300 font-sans">
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">u</span> : ความเร็วต้น (m/s)
+                </div>
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">v</span> : ความเร็วปลาย (m/s)
+                </div>
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">t</span> : เวลา (s)
+                </div>
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">a</span> : ความเร่ง (m/s²)
+                </div>
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">s</span> : การกระจัด (m)
+                </div>
+                <div class="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">F</span> : แรงลัพธ์ (N)
+                </div>
+                <div class="col-span-2 p-2 rounded-lg bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                  <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400">m</span> : มวลของวัตถุ (kg)
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== การตั้งค่าค่าคงที่ G ==================== -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label for="constantG" class="block text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-earth-americas text-cyan-600 dark:text-cyan-400"></i>
+            GRAVITATIONAL (g)
+          </label>
+          <span class="text-xs text-cyan-600 dark:text-cyan-400 font-mono font-bold">m/s²</span>
+        </div>
+
+        <div class="bg-slate-50 dark:bg-slate-900/60 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-cyan-600/20 dark:border-cyan-500/30 space-y-3 shadow-inner">
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-600 dark:text-cyan-400 text-xs sm:text-sm font-mono font-bold">g =</span>
+            <input type="number" id="constantG" step="0.01" value="9.8" class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm sm:text-base font-mono font-bold focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(34,211,238,0.3)] transition-all text-slate-900 dark:text-white">
+          </div>
+          
+          <!-- Quick Preset Buttons -->
+          <div>
+            <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mb-1.5 font-medium">GRAVITY PRESETS:</span>
+            <div class="grid grid-cols-4 gap-1.5 font-mono">
+              <button onclick="setConstantG(9.8)" class="text-xs py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-cyan-50 dark:hover:bg-cyan-950 text-slate-700 dark:text-slate-200 hover:text-cyan-700 dark:hover:text-cyan-300 border border-slate-200 dark:border-slate-700 font-bold transition-all">9.8</button>
+              <button onclick="setConstantG(9.81)" class="text-xs py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-cyan-50 dark:hover:bg-cyan-950 text-slate-700 dark:text-slate-200 hover:text-cyan-700 dark:hover:text-cyan-300 border border-slate-200 dark:border-slate-700 font-bold transition-all">9.81</button>
+              <button onclick="setConstantG(10)" class="text-xs py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-cyan-50 dark:hover:bg-cyan-950 text-slate-700 dark:text-slate-200 hover:text-cyan-700 dark:hover:text-cyan-300 border border-slate-200 dark:border-slate-700 font-bold transition-all">10</button>
+              <button onclick="setConstantG(9.80665)" class="text-xs py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-cyan-50 dark:hover:bg-cyan-950 text-slate-700 dark:text-slate-200 hover:text-cyan-700 dark:hover:text-cyan-300 border border-slate-200 dark:border-slate-700 font-bold transition-all">Exact</button>
+            </div>
+          </div>
+
+          <!-- ปุ่มใช้ค่า G เป็นความเร่ง (a) -->
+          <button onclick="applyGToActiveFormula()" class="w-full py-2.5 px-3 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-mono font-bold transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 active:scale-95">
+            <i class="fa-solid fa-arrow-down-long"></i>
+            <span>INJECT G AS ACCELERATION (a)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== การตั้งค่าธีม (Theme Appearance) ==================== -->
+      <div>
+        <label class="block text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5 flex items-center gap-2">
+          <i class="fa-solid fa-circle-half-stroke text-cyan-600 dark:text-cyan-400"></i>
+          APPEARANCE (ธีมการแสดงผล)
+        </label>
+        <div class="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900/80 p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800">
+          <button id="lightThemeBtn" onclick="applyTheme('light')" class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all">
+            <i class="fa-solid fa-sun text-amber-500 text-sm"></i>
+            <span>LIGHT</span>
+          </button>
+          <button id="darkThemeBtn" onclick="applyTheme('dark')" class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all">
+            <i class="fa-solid fa-moon text-indigo-400 text-sm"></i>
+            <span>DARK</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ส่วนท้าย Sidebar -->
+    <div class="pt-3 border-t border-cyan-600/15 dark:border-cyan-500/20 text-center flex-shrink-0">
+      <span class="text-[11px] sm:text-xs font-mono text-cyan-800 dark:text-cyan-400/80 font-medium">
+        💡 คลิกที่แถบสูตรเพื่ออ่านเทคนิคการทำโจทย์ฟิสิกส์
+      </span>
+    </div>
+  </aside>
+
+  <!-- ==================== HOLOGRAPHIC TOAST NOTIFICATION ==================== -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-slate-950/90 border border-cyan-500 text-cyan-800 dark:text-cyan-300 px-5 py-3 rounded-2xl shadow-xl dark:shadow-[0_0_30px_rgba(6,182,212,0.5)] text-xs sm:text-sm font-mono font-bold transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3 backdrop-blur-xl">
+    <i class="fa-solid fa-satellite-dish text-cyan-600 dark:text-cyan-400 text-sm animate-pulse"></i>
+    <span id="toastMessage">TRANSMISSION RECEIVED</span>
+  </div>
+
+  <!-- ==================== LOGIC JAVASCRIPT ==================== -->
+  <script>
+    // --- 1. ข้อมูลสูตร ตัวแปร และไอคอนเรืองแสง ---
+    const formulas = {
+      f1: {
+        id: 'f1',
+        title: 'v = u + at',
+        desc: 'LINEAR KINEMATICS',
+        vars: [
+          { key: 'v', label: 'ความเร็วปลาย (v)', unit: 'm/s', icon: 'fa-solid fa-gauge-high', glowClass: 'text-cyan-600 dark:text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' },
+          { key: 'u', label: 'ความเร็วต้น (u)', unit: 'm/s', icon: 'fa-solid fa-gauge', glowClass: 'text-sky-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' },
+          { key: 'a', label: 'ความเร่ง (a)', unit: 'm/s²', icon: 'fa-solid fa-rocket', glowClass: 'text-fuchsia-600 dark:text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]', canUseG: true },
+          { key: 't', label: 'เวลา (t)', unit: 's', icon: 'fa-solid fa-stopwatch', glowClass: 'text-amber-600 dark:text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]' }
+        ]
+      },
+      f2: {
+        id: 'f2',
+        title: 's = ut + ½at²',
+        desc: 'DISPLACEMENT & TIME',
+        vars: [
+          { key: 's', label: 'การกระจัด (s)', unit: 'm', icon: 'fa-solid fa-route', glowClass: 'text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' },
+          { key: 'u', label: 'ความเร็วต้น (u)', unit: 'm/s', icon: 'fa-solid fa-gauge', glowClass: 'text-sky-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' },
+          { key: 'a', label: 'ความเร่ง (a)', unit: 'm/s²', icon: 'fa-solid fa-rocket', glowClass: 'text-fuchsia-600 dark:text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]', canUseG: true },
+          { key: 't', label: 'เวลา (t)', unit: 's', icon: 'fa-solid fa-stopwatch', glowClass: 'text-amber-600 dark:text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]' }
+        ]
+      },
+      f3: {
+        id: 'f3',
+        title: 'v² = u² + 2as',
+        desc: 'TIME-INDEPENDENT VELOCITY',
+        vars: [
+          { key: 'v', label: 'ความเร็วปลาย (v)', unit: 'm/s', icon: 'fa-solid fa-gauge-high', glowClass: 'text-cyan-600 dark:text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' },
+          { key: 'u', label: 'ความเร็วต้น (u)', unit: 'm/s', icon: 'fa-solid fa-gauge', glowClass: 'text-sky-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.8)]' },
+          { key: 'a', label: 'ความเร่ง (a)', unit: 'm/s²', icon: 'fa-solid fa-rocket', glowClass: 'text-fuchsia-600 dark:text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]', canUseG: true },
+          { key: 's', label: 'การกระจัด (s)', unit: 'm', icon: 'fa-solid fa-route', glowClass: 'text-emerald-600 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' }
+        ]
+      },
+      f4: {
+        id: 'f4',
+        title: 'F = ma',
+        desc: "NEWTON'S SECOND LAW",
+        vars: [
+          { key: 'F', label: 'แรงลัพธ์ (F)', unit: 'N', icon: 'fa-solid fa-bolt', glowClass: 'text-rose-600 dark:text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.8)]' },
+          { key: 'm', label: 'มวล (m)', unit: 'kg', icon: 'fa-solid fa-weight-hanging', glowClass: 'text-violet-600 dark:text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.8)]' },
+          { key: 'a', label: 'ความเร่ง (a)', unit: 'm/s²', icon: 'fa-solid fa-rocket', glowClass: 'text-fuchsia-600 dark:text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]', canUseG: true }
+        ]
+      }
+    };
+
+    let currentTab = 'f1';
+
+    function fmt(n) {
+      if (n === null || n === undefined || isNaN(n)) return '';
+      const rounded = Math.round((n + Number.EPSILON) * 10000) / 10000;
+      return rounded.toString();
+    }
+
+    function fmtSigned(n) {
+      return n < 0 ? `(${fmt(n)})` : fmt(n);
+    }
+
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // --- 2. การสลับ Tab สูตร ---
+    function switchTab(formulaId) {
+      currentTab = formulaId;
+      const formula = formulas[formulaId];
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-200/50 dark:hover:bg-slate-900/60 flex items-center justify-center gap-2 whitespace-nowrap";
+      });
+      const activeBtn = document.getElementById(`tab-${formulaId}`);
+      activeBtn.className = "tab-btn w-full sm:w-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-full font-bold text-xs sm:text-sm md:text-base transition-all duration-300 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-600 text-white dark:text-black shadow-[0_0_18px_rgba(6,182,212,0.45)] flex items-center justify-center gap-2 whitespace-nowrap";
+
+      document.getElementById('currentFormulaDisplay').innerText = formula.title;
+      document.getElementById('formulaDesc').innerText = formula.desc;
+
+      hideError();
+
+      const targetSelect = document.getElementById('targetVariable');
+      targetSelect.innerHTML = formula.vars.map(v => `<option value="${v.key}">หาค่า ${v.label}</option>`).join('');
+
+      renderDynamicInputs();
+    }
+
+    // --- 3. Dynamic Inputs: แก้ปัญหา Icon Overlap อย่างเด็ดขาด ---
+    function renderDynamicInputs() {
+      const formula = formulas[currentTab];
+      const targetVar = document.getElementById('targetVariable').value;
+      const container = document.getElementById('inputsContainer');
+      container.innerHTML = '';
+
+      hideError();
+
+      const inputVars = formula.vars.filter(v => v.key !== targetVar);
+
+      inputVars.forEach(v => {
+        const div = document.createElement('div');
+        div.className = "flex flex-col gap-1.5 sm:gap-2";
+
+        let gButtonHtml = '';
+        if (v.canUseG) {
+          gButtonHtml = `
+            <button type="button" onclick="fillGValue('input_${v.key}')" class="text-[11px] sm:text-xs font-mono font-bold text-cyan-700 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-200 bg-cyan-100/70 dark:bg-cyan-950/60 hover:bg-cyan-200/70 dark:hover:bg-cyan-900/70 border border-cyan-400/40 dark:border-cyan-500/40 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-bolt text-[10px]"></i>
+              <span>ดึงค่า g</span>
+            </button>
+          `;
+        }
+
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <label for="input_${v.key}" class="text-xs sm:text-sm font-mono text-slate-700 dark:text-slate-300 font-bold flex items-center gap-2">
+              <span>${v.label}</span>
+            </label>
+            ${gButtonHtml}
+          </div>
+          <!-- กล่องหุ้ม relative พร้อม Icon absolute และ Input ที่มี pl-14 sm:pl-16 ป้องกันการซ้อนทับ -->
+          <div class="relative flex items-center">
+            <span class="absolute left-4 w-7 flex items-center justify-center text-base sm:text-lg md:text-xl pointer-events-none z-10 ${v.glowClass}">
+              <i class="${v.icon}"></i>
+            </span>
+            <input type="number" id="input_${v.key}" step="any" placeholder="INPUT VALUE..." class="w-full pl-14 sm:pl-16 pr-14 sm:pr-16 py-3 sm:py-3.5 md:py-4 rounded-xl sm:rounded-2xl border border-slate-300 dark:border-slate-700/80 bg-white/90 dark:bg-slate-950/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 placeholder:text-xs sm:placeholder:text-sm focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(34,211,238,0.35)] transition-all duration-300 font-mono text-sm sm:text-base md:text-lg font-bold">
+            <span class="absolute right-4 text-xs sm:text-sm font-mono font-bold text-cyan-600 dark:text-cyan-400/80 select-none pointer-events-none">${v.unit}</span>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function fillGValue(inputId) {
+      const gVal = document.getElementById('constantG').value;
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.value = gVal;
+        highlightInput(input);
+        showToast(`INJECTED g = ${gVal} m/s²`);
+      }
+    }
+
+    function highlightInput(inputElement) {
+      inputElement.classList.add('ring-2', 'ring-cyan-500', 'shadow-[0_0_20px_rgba(34,211,238,0.6)]');
+      setTimeout(() => {
+        inputElement.classList.remove('ring-2', 'ring-cyan-500', 'shadow-[0_0_20px_rgba(34,211,238,0.6)]');
+      }, 1200);
+    }
+
+    function resetInputs() {
+      renderDynamicInputs();
+      hideError();
+    }
+
+    function hideError() {
+      document.getElementById('errorBox').classList.add('hidden');
+    }
+
+    function showError(msg) {
+      const errorBox = document.getElementById('errorBox');
+      document.getElementById('errorMessage').innerText = msg;
+      errorBox.classList.remove('hidden');
+    }
+
+    // --- 4. Modal Pop-up Handlers ---
+    function openSolutionModal() {
+      const modal = document.getElementById('solutionModal');
+      const card = document.getElementById('solutionModalCard');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.add('modal-enter');
+        card.classList.remove('modal-exit');
+      }, 10);
+    }
+
+    function closeSolutionModal() {
+      const modal = document.getElementById('solutionModal');
+      const card = document.getElementById('solutionModalCard');
+      card.classList.remove('modal-enter');
+      card.classList.add('modal-exit');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSolutionModal();
+    });
+    document.getElementById('solutionModal').addEventListener('click', (e) => {
+      if (e.target.id === 'solutionModal') closeSolutionModal();
+    });
+
+    // --- 5. เครื่องคำนวณพีชคณิตฟิสิกส์ (Physics Solver Engine) ---
+    function calculateSolution() {
+      hideError();
+      const target = document.getElementById('targetVariable').value;
+      const currentFormulaObj = formulas[currentTab];
+      const unit = currentFormulaObj.vars.find(v => v.key === target).unit;
+
+      const getVal = (key) => {
+        const el = document.getElementById(`input_${key}`);
+        if (!el || el.value.trim() === '') return null;
+        const val = parseFloat(el.value);
+        return isNaN(val) ? null : val;
+      };
+
+      const requiredVars = currentFormulaObj.vars.filter(v => v.key !== target);
+      for (let v of requiredVars) {
+        if (getVal(v.key) === null) {
+          showError(`โปรดระบุค่า "${v.label}" ให้ครบถ้วน`);
+          return;
+        }
+      }
+
+      let step1 = "";
+      let step2 = "";
+      let step3 = "";
+      let finalVal = null;
+
+      try {
+        // ====================== FORMULA 1: v = u + at ======================
+        if (currentTab === 'f1') {
+          const v = getVal('v'), u = getVal('u'), a = getVal('a'), t = getVal('t');
+
+          if (target === 'v') {
+            step1 = `v = u + at`;
+            step2 = `v = ${fmtSigned(u)} + (${fmtSigned(a)} × ${fmtSigned(t)})`;
+            const at = a * t;
+            step3 = `v = ${fmt(u)} + ${fmtSigned(at)}`;
+            finalVal = u + at;
+          } 
+          else if (target === 'u') {
+            step1 = `u = v - at`;
+            step2 = `u = ${fmtSigned(v)} - (${fmtSigned(a)} × ${fmtSigned(t)})`;
+            const at = a * t;
+            step3 = `u = ${fmt(v)} - ${fmtSigned(at)}`;
+            finalVal = v - at;
+          } 
+          else if (target === 'a') {
+            if (t === 0) throw new Error("เวลา (t) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `a = (v - u) / t`;
+            step2 = `a = (${fmtSigned(v)} - ${fmtSigned(u)}) / ${fmtSigned(t)}`;
+            const diff = v - u;
+            step3 = `a = ${fmt(diff)} / ${fmt(t)}`;
+            finalVal = diff / t;
+          } 
+          else if (target === 't') {
+            if (a === 0) throw new Error("ความเร่ง (a) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `t = (v - u) / a`;
+            step2 = `t = (${fmtSigned(v)} - ${fmtSigned(u)}) / ${fmtSigned(a)}`;
+            const diff = v - u;
+            step3 = `t = ${fmt(diff)} / ${fmt(a)}`;
+            finalVal = diff / a;
+          }
+        }
+
+        // ====================== FORMULA 2: s = ut + ½at² ======================
+        else if (currentTab === 'f2') {
+          const s = getVal('s'), u = getVal('u'), a = getVal('a'), t = getVal('t');
+
+          if (target === 's') {
+            step1 = `s = ut + ½at²`;
+            step2 = `s = (${fmtSigned(u)} × ${fmtSigned(t)}) + (½ × ${fmtSigned(a)} × ${fmtSigned(t)}²)`;
+            const ut = u * t;
+            const t2 = Math.pow(t, 2);
+            const half_at2 = 0.5 * a * t2;
+            step3 = `s = ${fmt(ut)} + (0.5 × ${fmt(a)} × ${fmt(t2)}) = ${fmt(ut)} + ${fmtSigned(half_at2)}`;
+            finalVal = ut + half_at2;
+          } 
+          else if (target === 'u') {
+            if (t === 0) throw new Error("เวลา (t) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `u = (s - ½at²) / t`;
+            step2 = `u = (${fmtSigned(s)} - (½ × ${fmtSigned(a)} × ${fmtSigned(t)}²)) / ${fmtSigned(t)}`;
+            const half_at2 = 0.5 * a * Math.pow(t, 2);
+            const num = s - half_at2;
+            step3 = `u = (${fmt(s)} - ${fmtSigned(half_at2)}) / ${fmt(t)} = ${fmt(num)} / ${fmt(t)}`;
+            finalVal = num / t;
+          } 
+          else if (target === 'a') {
+            if (t === 0) throw new Error("เวลา (t) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `a = 2(s - ut) / t²`;
+            step2 = `a = 2(${fmtSigned(s)} - (${fmtSigned(u)} × ${fmtSigned(t)})) / ${fmtSigned(t)}²`;
+            const ut = u * t;
+            const diff = s - ut;
+            const t2 = Math.pow(t, 2);
+            step3 = `a = 2(${fmt(diff)}) / ${fmt(t2)} = ${fmt(2 * diff)} / ${fmt(t2)}`;
+            finalVal = (2 * diff) / t2;
+          } 
+          else if (target === 't') {
+            if (a === 0) {
+              if (u === 0) throw new Error("เมื่อ a = 0 และ u = 0 ไม่สามารถหาค่าเวลาได้");
+              step1 = `t = s / u  (กรณีความเร่ง a = 0)`;
+              step2 = `t = ${fmtSigned(s)} / ${fmtSigned(u)}`;
+              step3 = `t = ${fmt(s)} / ${fmt(u)}`;
+              finalVal = s / u;
+            } else {
+              const A = 0.5 * a;
+              const B = u;
+              const C = -s;
+              const disc = Math.pow(B, 2) - (4 * A * C);
+
+              step1 = `สมการกำลังสอง: ½at² + ut - s = 0 ➔ t = [-u ± √(u² - 4(½a)(-s))] / (2 × ½a)`;
+              step2 = `t = [-(${fmtSigned(u)}) ± √(${fmtSigned(u)}² - 4(${fmt(A)})(${fmt(C)}))] / ${fmt(2 * A)}`;
+
+              if (disc < 0) {
+                throw new Error("ค่าในราก (Discriminant) ติดลบ — ไม่มีคำตอบที่เป็นจำนวนจริง");
+              }
+
+              const sqrtDisc = Math.sqrt(disc);
+              const t1 = (-B + sqrtDisc) / (2 * A);
+              const t2 = (-B - sqrtDisc) / (2 * A);
+
+              step3 = `ค่าในรูท = ${fmt(disc)} (√Δ = ${fmt(sqrtDisc)}) ➔ ได้ค่า t: ${fmt(t1)} s หรือ ${fmt(t2)} s`;
+              if (t1 >= 0 && t2 >= 0) {
+                finalVal = Math.min(t1, t2);
+              } else {
+                finalVal = Math.max(t1, t2);
+              }
+            }
+          }
+        }
+
+        // ====================== FORMULA 3: v² = u² + 2as ======================
+        else if (currentTab === 'f3') {
+          const v = getVal('v'), u = getVal('u'), a = getVal('a'), s = getVal('s');
+
+          if (target === 'v') {
+            step1 = `v = √(u² + 2as)`;
+            step2 = `v = √(${fmtSigned(u)}² + 2 × ${fmtSigned(a)} × ${fmtSigned(s)})`;
+            const u2 = Math.pow(u, 2);
+            const two_as = 2 * a * s;
+            const inner = u2 + two_as;
+            step3 = `v = √(${fmt(u2)} + ${fmtSigned(two_as)}) = √(${fmt(inner)})`;
+            if (inner < 0) throw new Error("ค่าในเครื่องหมายรากติดลบ (v² < 0)");
+            finalVal = Math.sqrt(inner);
+          } 
+          else if (target === 'u') {
+            step1 = `u = √(v² - 2as)`;
+            step2 = `u = √(${fmtSigned(v)}² - 2 × ${fmtSigned(a)} × ${fmtSigned(s)})`;
+            const v2 = Math.pow(v, 2);
+            const two_as = 2 * a * s;
+            const inner = v2 - two_as;
+            step3 = `u = √(${fmt(v2)} - ${fmtSigned(two_as)}) = √(${fmt(inner)})`;
+            if (inner < 0) throw new Error("ค่าในเครื่องหมายรากติดลบ (u² < 0)");
+            finalVal = Math.sqrt(inner);
+          } 
+          else if (target === 'a') {
+            if (s === 0) throw new Error("การกระจัด (s) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `a = (v² - u²) / 2s`;
+            step2 = `a = (${fmtSigned(v)}² - ${fmtSigned(u)}²) / (2 × ${fmtSigned(s)})`;
+            const v2 = Math.pow(v, 2);
+            const u2 = Math.pow(u, 2);
+            const diff = v2 - u2;
+            const denom = 2 * s;
+            step3 = `a = (${fmt(v2)} - ${fmt(u2)}) / ${fmt(denom)} = ${fmt(diff)} / ${fmt(denom)}`;
+            finalVal = diff / denom;
+          } 
+          else if (target === 's') {
+            if (a === 0) throw new Error("ความเร่ง (a) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `s = (v² - u²) / 2a`;
+            step2 = `s = (${fmtSigned(v)}² - ${fmtSigned(u)}²) / (2 × ${fmtSigned(a)})`;
+            const v2 = Math.pow(v, 2);
+            const u2 = Math.pow(u, 2);
+            const diff = v2 - u2;
+            const denom = 2 * a;
+            step3 = `s = (${fmt(v2)} - ${fmt(u2)}) / ${fmt(denom)} = ${fmt(diff)} / ${fmt(denom)}`;
+            finalVal = diff / denom;
+          }
+        }
+
+        // ====================== FORMULA 4: F = ma ======================
+        else if (currentTab === 'f4') {
+          const F = getVal('F'), m = getVal('m'), a = getVal('a');
+
+          if (target === 'F') {
+            step1 = `F = ma`;
+            step2 = `F = ${fmtSigned(m)} × ${fmtSigned(a)}`;
+            step3 = `F = ${fmt(m)} × ${fmt(a)}`;
+            finalVal = m * a;
+          } 
+          else if (target === 'm') {
+            if (a === 0) throw new Error("ความเร่ง (a) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `m = F / a`;
+            step2 = `m = ${fmtSigned(F)} / ${fmtSigned(a)}`;
+            step3 = `m = ${fmt(F)} / ${fmt(a)}`;
+            finalVal = F / a;
+          } 
+          else if (target === 'a') {
+            if (m === 0) throw new Error("มวล (m) ไม่สามารถมีค่าเป็น 0 ได้");
+            step1 = `a = F / m`;
+            step2 = `a = ${fmtSigned(F)} / ${fmtSigned(m)}`;
+            step3 = `a = ${fmt(F)} / ${fmt(m)}`;
+            finalVal = F / m;
+          }
+        }
+
+        document.getElementById('step1Formula').innerText = step1;
+        document.getElementById('step2Substitute').innerText = step2;
+        document.getElementById('step3Intermediate').innerText = step3;
+        document.getElementById('step4Conclusion').innerText = `${target} = ${fmt(finalVal)} ${unit}`;
+
+        openSolutionModal();
+
+      } catch (err) {
+        showError(err.message || "เกิดข้อผิดพลาดในการคำนวณ");
+      }
+    }
+
+    // --- 6. จัดการ Sidebar, Theme และ Accordion คู่มือ ---
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+
+    function toggleSidebar(open) {
+      if (open) {
+        backdrop.classList.remove('hidden');
+        setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+        sidebar.classList.remove('translate-x-full');
+      } else {
+        backdrop.classList.add('opacity-0');
+        sidebar.classList.add('translate-x-full');
+        setTimeout(() => backdrop.classList.add('hidden'), 300);
+      }
+    }
+
+    document.getElementById('openSidebarBtn').addEventListener('click', () => toggleSidebar(true));
+    document.getElementById('closeSidebarBtn').addEventListener('click', () => toggleSidebar(false));
+    backdrop.addEventListener('click', () => toggleSidebar(false));
+
+    function toggleGuide(guideId) {
+      const content = document.getElementById(`content-${guideId}`);
+      const arrow = document.getElementById(`arrow-${guideId}`);
+      const isOpen = !content.classList.contains('hidden');
+
+      if (isOpen) {
+        content.classList.add('hidden');
+        if (arrow) arrow.classList.remove('rotate-180');
+      } else {
+        content.classList.remove('hidden');
+        if (arrow) arrow.classList.add('rotate-180');
+      }
+    }
+
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      const lightBtn = document.getElementById('lightThemeBtn');
+      const darkBtn = document.getElementById('darkThemeBtn');
+      const quickIcon = document.getElementById('quickThemeIcon');
+
+      const isDark = (theme === 'dark');
+
+      if (isDark) {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        darkBtn.className = "flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all shadow-md bg-cyan-500/20 text-cyan-300 border border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.3)]";
+        lightBtn.className = "flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-medium transition-all text-slate-400 hover:text-slate-200 border border-transparent";
+        quickIcon.className = "fa-solid fa-moon text-indigo-400";
+      } else {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        lightBtn.className = "flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-bold transition-all shadow-md bg-white text-cyan-800 border border-cyan-400 shadow-sm";
+        darkBtn.className = "flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-medium transition-all text-slate-500 hover:text-slate-800 border border-transparent";
+        quickIcon.className = "fa-solid fa-sun text-amber-500";
+      }
+
+      initParticles(isDark);
+    }
+
+    function toggleThemeQuick() {
+      const isDark = document.documentElement.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+      showToast(isDark ? "SWITCHED TO LIGHT QUANTUM LAB" : "SWITCHED TO DARK CYBER LAB");
+    }
+
+    function setConstantG(val) {
+      document.getElementById('constantG').value = val;
+      showToast(`SELECTED g = ${val} m/s²`);
+    }
+
+    function applyGToActiveFormula() {
+      const gInput = document.getElementById('constantG');
+      const gVal = parseFloat(gInput.value);
+
+      if (isNaN(gVal)) {
+        alert("กรุณากรอกค่าคงที่ G ให้ถูกต้อง");
+        return;
+      }
+
+      const inputA = document.getElementById('input_a');
+      const targetVar = document.getElementById('targetVariable').value;
+
+      if (targetVar === 'a') {
+        showToast("⚠️ TARGET IS (a) — NO INJECTION NEEDED");
+        return;
+      }
+
+      if (inputA) {
+        inputA.value = gVal;
+        highlightInput(inputA);
+        toggleSidebar(false);
+        showToast(`INJECTED g = ${gVal} TO ACCELERATION (a)`);
+      } else {
+        showToast("สูตรปัจจุบันไม่มีช่องความเร่ง (a)");
+      }
+    }
+
+    // --- 7. การตั้งค่า Particles.js Dynamic Theme-Aware ---
+    function initParticles(isDark) {
+      if (typeof particlesJS === 'undefined') return;
+
+      if (window.pJSDom && window.pJSDom.length) {
+        window.pJSDom[0].pJS.fn.vendors.destroypJS();
+        window.pJSDom = [];
+      }
+
+      const particleColors = isDark 
+        ? ["#00f0ff", "#818cf8", "#38bdf8"] 
+        : ["#0284c7", "#6366f1", "#0d9488"];
+      const lineColor = isDark ? "#00f0ff" : "#0284c7";
+      const lineOpacity = isDark ? 0.22 : 0.28;
+
+      particlesJS('particles-js', {
+        "particles": {
+          "number": {
+            "value": 50,
+            "density": { "enable": true, "value_area": 850 }
+          },
+          "color": {
+            "value": particleColors
+          },
+          "shape": {
+            "type": "circle"
+          },
+          "opacity": {
+            "value": isDark ? 0.45 : 0.65,
+            "random": true
+          },
+          "size": {
+            "value": isDark ? 2.5 : 3.2,
+            "random": true
+          },
+          "line_linked": {
+            "enable": true,
+            "distance": 140,
+            "color": lineColor,
+            "opacity": lineOpacity,
+            "width": isDark ? 1.1 : 1.3
+          },
+          "move": {
+            "enable": true,
+            "speed": 1.2,
+            "direction": "none",
+            "random": true,
+            "straight": false,
+            "out_mode": "out",
+            "bounce": false
+          }
+        },
+        "interactivity": {
+          "detect_on": "window",
+          "events": {
+            "onhover": {
+              "enable": true,
+              "mode": "grab"
+            },
+            "onclick": {
+              "enable": true,
+              "mode": "push"
+            },
+            "resize": true
+          },
+          "modes": {
+            "grab": {
+              "distance": 180,
+              "line_linked": {
+                "opacity": isDark ? 0.65 : 0.75
+              }
+            },
+            "push": {
+              "particles_nb": 3
+            }
+          }
+        },
+        "retina_detect": true
+      });
+    }
+
+    // --- เริ่มต้นระบบเมื่อโหลดหน้าเสร็จสมบูรณ์ ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      applyTheme(savedTheme);
+      switchTab('f1');
+    });
+  </script>
+</body>
+</html>
